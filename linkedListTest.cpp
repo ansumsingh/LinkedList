@@ -9,12 +9,14 @@ int main()
     l1.addItem("sita");
     l1.printItems();
     //move constructor test
-    linkedList<string> l2(std::move(l1));
+    linkedList<string> l2(l1);
     l1.printItems();
     l2.printItems();
 
     //after move assignment
+    cout<<"before move"<<endl;
     linkedList<string> l3;
+    l3.addItem("Ram3");
     l3=std::move(l2);
     l2.printItems();
     l3.printItems();

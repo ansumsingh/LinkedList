@@ -23,8 +23,11 @@ class linkedList{
     struct node{
         T item;
         shared_ptr<node> next;
-        node():next(NULL),item(){}
+        node():item(),next(nullptr){}
+        node(node &&)=delete;//This implementation does not require copy and move ctor for node
+        node(node &other)=delete;
         node(const T& itemIP,shared_ptr<node> nextIP):item(itemIP),next(nextIP){}
+
         ~node()
         {
 #ifdef DEBUG_ENABLE
@@ -32,26 +35,30 @@ class linkedList{
 #endif
         }
     };
+
 public:
     linkedList():head(){}
     linkedList(const linkedList&);//implements Deep copy
-    linkedList(linkedList&& ) =default; //move constructor
+    linkedList(linkedList&& ) noexcept; //move constructor
     linkedList(const T& );//creates a new object with item=item
-    linkedList& operator=(const linkedList&);//Deep copy assignment
-    linkedList& operator=(linkedList &&)=default;//move assignment;
+    linkedList& operator=( linkedList);//Implementing copy and swap idiom
+    //linkedList& operator=(linkedList &&)=default;//move assignment;
 
     void addItem(const T& ); //add new item to the tail
-    bool removeFromHead(); //removes the first element;
-    bool removeItem(const T &);
-    bool returnFirstElement(T& );//If the list is not empty put in the variable passed
-    bool printItems();
-    inline bool isEmpty(){return head==NULL?true:false;}
+    bool removeFromHead() noexcept; //removes the first element;
+    bool removeItem(const T &);//Removes the Node with T. Return true if sucessful
+    bool returnFirstElement(T& ) noexcept;//If the list is not empty put in the variable passed
+    bool printItems() noexcept;
+    inline bool isEmpty() noexcept {return head==NULL?true:false;}
     ~linkedList()
     {head.reset();
      }
 
+
+
 private:
     shared_ptr<node> head;
+    void swap(linkedList<T>&);
 
 };
 
@@ -65,9 +72,13 @@ linkedList<T>::linkedList(const linkedList<T> &other)
             while(temp->next!=NULL)
             {
                 temp2->next= shared_ptr<node>(new node(temp->next->item,shared_ptr<node>()));
+                //temp2->next= new node(temp->next->item,shared_ptr<node>());
                 temp= temp->next;
                 temp2=temp2->next;
             }
+#ifdef DEBUG_ENABLE
+            cout<<"copy ctor called"<<endl;
+#endif
 }
 /*
 template<class T>
@@ -77,24 +88,38 @@ linkedList<T>::linkedList(linkedList<T> &&other):head(std::move(other.head))
 }
 */
 template<class T>
-linkedList<T>& linkedList<T>::operator =(const linkedList<T> &other)
+linkedList<T>& linkedList<T>::operator =( linkedList<T> other)
 {
-    //Implementing deep copy
-            shared_ptr<node> temp(other.head);
-            head= shared_ptr<node>(new node(temp->item,shared_ptr<node>()));
-            shared_ptr<node> temp2(head);
-            while(temp->next!=NULL)
-            {
-                temp2->next= shared_ptr<node>(new node(temp->next->item,shared_ptr<node>()));
-                temp= temp->next;
-                temp2=temp2->next;
-            }
+    //Implementing copy assignment
+            this->swap(other);
 }
+
+template<class T>
+void linkedList<T>::swap(linkedList<T>& other)
+{   //using std::swap;
+    //Implementing swap operation
+    shared_ptr<node> temp = other.head;
+    other.head = head;
+    head =temp;
+
+
+}
+
+template<class T>
+linkedList<T>::linkedList(linkedList &&other)noexcept:head(std::move(other.head))
+{
+    other.head.reset();
+#ifdef DEBUG_ENABLE
+    cout<<"move ctor called"<<endl;
+#endif
+}
+
 
 template<class T>
 linkedList<T>::linkedList(const T &other)
 {
-    head = shared_ptr<node >(new node(other,shared_ptr<node>()));
+    //head = shared_ptr<node >(new node(other,shared_ptr<node>()));
+    head = new node(other,shared_ptr<node>(nullptr));
 }
 
 template<class T>
@@ -156,7 +181,7 @@ void linkedList<T>::addItem(const T& input)
 }
 
 template<class T>
-bool linkedList<T>::removeFromHead()
+bool linkedList<T>::removeFromHead() noexcept
 {
 
     //check if the list is empty
@@ -169,7 +194,7 @@ bool linkedList<T>::removeFromHead()
 }
 
 template<class T>
-bool linkedList<T>::returnFirstElement(T &returnedElement)
+bool linkedList<T>::returnFirstElement(T &returnedElement) noexcept
 {
     if(head==NULL)
     {
@@ -180,7 +205,7 @@ bool linkedList<T>::returnFirstElement(T &returnedElement)
 }
 
 template<class T>
-bool linkedList<T>::printItems()
+bool linkedList<T>::printItems() noexcept
 {
     shared_ptr<node > printNode = head;
     if(printNode==NULL)
