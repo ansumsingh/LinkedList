@@ -1,6 +1,6 @@
 # LinkedList
 
-This linkedlist class uses is for C++14 compiler. This linkedList uses the smart pointer so the overhead of deletion is not necessary.
+This linkedlist class uses is for C++14 compiler. This linkedList uses the smart pointer so the overhead of deletion is not necessary. In addition this linked list implements move semantics and copy-and-idiom for performance inhancement
 
 # Usage
 using namespace myLinkedList;//for the namespace
